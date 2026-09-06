@@ -1,11 +1,11 @@
 output "certificate_arn" {
   description = "ACM certificate ARN"
-  value       = var.enable_custom_domain ? aws_acm_certificate.main[0].arn : null
+  value       = !var.enable_custom_domain ? null : (var.certificate_arn != null ? var.certificate_arn : aws_acm_certificate.main[0].arn)
 }
 
 output "dns_validation_records" {
   description = "DNS records for ACM certificate validation"
-  value = var.enable_custom_domain && !var.enable_route53 ? {
+  value = local.create_certificate && !var.enable_route53 ? {
     for dvo in aws_acm_certificate.main[0].domain_validation_options : dvo.domain_name => {
       name  = dvo.resource_record_name
       type  = dvo.resource_record_type

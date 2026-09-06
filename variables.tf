@@ -20,6 +20,17 @@ variable "full_domain" {
   default     = null
 }
 
+variable "certificate_arn" {
+  description = "ARN of an existing ACM certificate covering the full domain. When set, the module attaches this certificate instead of requesting and validating its own. Must be in us-east-1 for CloudFront."
+  type        = string
+  default     = null
+
+  validation {
+    condition     = var.certificate_arn == null || can(regex("^arn:aws[a-z-]*:acm:us-east-1:[0-9]{12}:certificate/.+$", var.certificate_arn))
+    error_message = "certificate_arn must be an ACM certificate ARN in us-east-1 (CloudFront only accepts certificates from that region)."
+  }
+}
+
 variable "app_name" {
   description = "Application name for resource naming"
   type        = string
