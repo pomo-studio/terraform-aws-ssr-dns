@@ -9,18 +9,52 @@ Reusable DNS and ACM module for SSR stacks.
 
 This module manages Route53 alias records and ACM certificate issuance/validation for custom domains.
 
+## Bringing your own certificate
+
+By default the module requests an ACM certificate for `full_domain` and validates it via
+Route53. Set `certificate_arn` to attach a certificate that already exists:
+
+```hcl
+module "dns" {
+  source  = "pomo-studio/ssr-dns/aws"
+  version = "= 0.3.0"
+
+  enable_custom_domain = true
+  enable_route53       = true
+  domain_name          = "example.com"
+  full_domain          = "www.example.com"
+  certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/abc-123"
+
+  app_name                  = "example"
+  cloudfront_domain_name    = module.cloudfront.domain_name
+  cloudfront_hosted_zone_id = module.cloudfront.hosted_zone_id
+}
+```
+
+With it set, the module skips the certificate request, the validation record, and the
+validation wait — the certificate is assumed to be already issued. The alias record is
+still managed as usual.
+
+Two cases this serves: reusing a shared or wildcard certificate issued elsewhere, and
+standing up a site whose domain is not yet delegated to Route53, where the module's own
+validation record would be written to a zone nothing queries and validation could never
+succeed.
+
+The certificate must be in `us-east-1` — CloudFront accepts no other region, and the
+variable validates it.
+
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="requirement_terraform"></a> [terraform](#requirement\_terraform) | >= 1.5.0 |
 | <a name="requirement_aws"></a> [aws](#requirement\_aws) | >= 5.0, < 7.0 |
 
 ## Providers
 
 | Name | Version |
-| ---- | ------- |
+|------|---------|
 | <a name="provider_aws"></a> [aws](#provider\_aws) | 6.62.0 |
 
 ## Modules
@@ -30,7 +64,7 @@ No modules.
 ## Resources
 
 | Name | Type |
-| ---- | ---- |
+|------|------|
 | [aws_acm_certificate.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) | resource |
 | [aws_acm_certificate_validation.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation) | resource |
 | [aws_route53_record.cert_validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
@@ -40,8 +74,9 @@ No modules.
 ## Inputs
 
 | Name | Description | Type | Default | Required |
-| ---- | ----------- | ---- | ------- | :------: |
+|------|-------------|------|---------|:--------:|
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Application name for resource naming | `string` | n/a | yes |
+| <a name="input_certificate_arn"></a> [certificate\_arn](#input\_certificate\_arn) | ARN of an existing ACM certificate covering the full domain. When set, the module attaches this certificate instead of requesting and validating its own. Must be in us-east-1 for CloudFront. | `string` | `null` | no |
 | <a name="input_cloudfront_domain_name"></a> [cloudfront\_domain\_name](#input\_cloudfront\_domain\_name) | CloudFront domain name for alias record | `string` | n/a | yes |
 | <a name="input_cloudfront_hosted_zone_id"></a> [cloudfront\_hosted\_zone\_id](#input\_cloudfront\_hosted\_zone\_id) | CloudFront hosted zone id for alias record | `string` | n/a | yes |
 | <a name="input_common_tags"></a> [common\_tags](#input\_common\_tags) | Common tags | `map(string)` | `{}` | no |
@@ -53,7 +88,7 @@ No modules.
 ## Outputs
 
 | Name | Description |
-| ---- | ----------- |
+|------|-------------|
 | <a name="output_certificate_arn"></a> [certificate\_arn](#output\_certificate\_arn) | ACM certificate ARN |
 | <a name="output_dns_cloudfront_record"></a> [dns\_cloudfront\_record](#output\_dns\_cloudfront\_record) | DNS record values for manual CloudFront configuration |
 | <a name="output_dns_validation_records"></a> [dns\_validation\_records](#output\_dns\_validation\_records) | DNS records for ACM certificate validation |

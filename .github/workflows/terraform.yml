@@ -97,4 +97,8 @@ jobs:
           working-dir: .
           output-file: README.md
           output-method: inject
-          args: --check
+          # The action's terraform-docs build has no --check flag; passing it
+          # aborts the step before any comparison happens, so this job failed
+          # on every run since it was added. fail-on-diff is the supported way
+          # to make an out-of-date README fail the build.
+          fail-on-diff: true
