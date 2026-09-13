@@ -3,27 +3,29 @@
 [![Terraform Validation](https://github.com/pomo-studio/terraform-aws-ssr-dns/actions/workflows/terraform.yml/badge.svg)](https://github.com/pomo-studio/terraform-aws-ssr-dns/actions/workflows/terraform.yml)
 [![Terraform Registry](https://img.shields.io/badge/terraform-registry-844FBA?logo=terraform)](https://registry.terraform.io/modules/pomo-studio/ssr-dns/aws)
 
-- [Changelog](CHANGELOG.md)
+[Changelog](CHANGELOG.md)
 
-Reusable DNS and ACM module for SSR stacks.
+Route 53 and ACM for a server-rendered site: issue and validate a certificate, then point a custom domain at CloudFront.
 
-This module manages Route53 alias records and ACM certificate issuance/validation for custom domains.
+## When to use it
 
-## Bringing your own certificate
+Use this component when an SSR site needs its own domain and certificate. By default it requests an ACM certificate and validates it through Route 53, then creates the alias record that points the domain at the distribution.
 
-By default the module requests an ACM certificate for `full_domain` and validates it via
-Route53. Set `certificate_arn` to attach a certificate that already exists:
+The bring-your-own path matters in two cases: a shared or wildcard certificate already covers the domain, or the domain is not yet delegated to Route 53. In the second case the module's own validation record would be written to a zone nothing queries, so validation could never succeed.
+
+CloudFront accepts certificates only from `us-east-1`; the module validates the region rather than letting the apply fail late.
+
+## Quickstart
 
 ```hcl
 module "dns" {
   source  = "pomo-studio/ssr-dns/aws"
-  version = "= 0.3.0"
+  version = "~> 0.3"
 
   enable_custom_domain = true
   enable_route53       = true
   domain_name          = "example.com"
   full_domain          = "www.example.com"
-  certificate_arn      = "arn:aws:acm:us-east-1:123456789012:certificate/abc-123"
 
   app_name                  = "example"
   cloudfront_domain_name    = module.cloudfront.domain_name
@@ -31,17 +33,27 @@ module "dns" {
 }
 ```
 
-With it set, the module skips the certificate request, the validation record, and the
-validation wait: the certificate is assumed to be already issued. The alias record is
-still managed as usual.
+To attach an existing certificate, set `certificate_arn` and leave the rest unchanged.
 
-Two cases this serves: reusing a shared or wildcard certificate issued elsewhere, and
-standing up a site whose domain is not yet delegated to Route53, where the module's own
-validation record would be written to a zone nothing queries and validation could never
-succeed.
+## What it creates
 
-The certificate must be in `us-east-1`: CloudFront accepts no other region, and the
-variable validates it.
+- An ACM certificate for `full_domain`, and its validation.
+- The Route 53 validation record ACM reads.
+- The Route 53 alias record that points the domain at CloudFront.
+- A data lookup of the hosted zone.
+
+With `certificate_arn` set, it creates only the alias record.
+
+## Design decisions
+
+- **Issue by default, attach on request.** The common path is automatic. `certificate_arn` disables issuance and validation for the cases that cannot use it.
+- **Validation through Route 53.** DNS validation renews without manual steps, as long as the zone is authoritative.
+- **Undelegated domains are a first-class case.** Attaching an existing certificate is the only safe path when the domain's nameservers live elsewhere.
+- **us-east-1 enforced.** CloudFront rejects certificates from any other region, so a wrong-region ARN fails immediately.
+
+## Examples
+
+- [Basic](examples/basic/)
 
 ## Reference
 
@@ -100,3 +112,11 @@ No modules.
 <!-- END_TF_DOCS -->
 
 </details>
+
+## Support and license
+
+Part of the [pomo-studio](https://github.com/pomo-studio) Terraform components, run in production by [postmodern.](https://pomo.studio). Regenerate the reference with `terraform-docs` v0.20.0 (`terraform-docs .`); CI fails on drift.
+
+See the [contribution guide](https://github.com/pomo-studio/.github/blob/main/CONTRIBUTING.md) and [security policy](https://github.com/pomo-studio/.github/blob/main/SECURITY.md).
+
+MIT licensed. See [LICENSE](LICENSE).
