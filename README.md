@@ -9,7 +9,9 @@ Route 53 and ACM for a server-rendered site: issue and validate a certificate, t
 
 ## When to use it
 
-Use this component when an SSR site needs its own domain and certificate. By default it requests an ACM certificate and validates it through Route 53, then creates the alias record that points the domain at the distribution.
+Give a CloudFront distribution a custom domain: request and validate an ACM certificate, then create the Route 53 alias record that points the domain at it. The distribution does not have to be server-rendered, so reach for this whenever a CDN endpoint needs a real domain name.
+
+It is also the DNS and certificate layer of the [Serverless SSR blueprint](https://registry.terraform.io/modules/pomo-studio/serverless-ssr/aws).
 
 The bring-your-own path matters in two cases: a shared or wildcard certificate already covers the domain, or the domain is not yet delegated to Route 53. In the second case the module's own validation record would be written to a zone nothing queries, so validation could never succeed.
 
