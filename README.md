@@ -32,7 +32,7 @@ module "dns" {
 ```
 
 With it set, the module skips the certificate request, the validation record, and the
-validation wait — the certificate is assumed to be already issued. The alias record is
+validation wait: the certificate is assumed to be already issued. The alias record is
 still managed as usual.
 
 Two cases this serves: reusing a shared or wildcard certificate issued elsewhere, and
@@ -40,8 +40,13 @@ standing up a site whose domain is not yet delegated to Route53, where the modul
 validation record would be written to a zone nothing queries and validation could never
 succeed.
 
-The certificate must be in `us-east-1` — CloudFront accepts no other region, and the
+The certificate must be in `us-east-1`: CloudFront accepts no other region, and the
 variable validates it.
+
+## Reference
+
+<details>
+<summary>Reference</summary>
 
 <!-- BEGIN_TF_DOCS -->
 ## Requirements
@@ -93,3 +98,5 @@ No modules.
 | <a name="output_dns_cloudfront_record"></a> [dns\_cloudfront\_record](#output\_dns\_cloudfront\_record) | DNS record values for manual CloudFront configuration |
 | <a name="output_dns_validation_records"></a> [dns\_validation\_records](#output\_dns\_validation\_records) | DNS records for ACM certificate validation |
 <!-- END_TF_DOCS -->
+
+</details>
