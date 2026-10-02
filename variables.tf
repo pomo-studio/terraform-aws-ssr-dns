@@ -20,6 +20,12 @@ variable "full_domain" {
   default     = null
 }
 
+variable "additional_domain_names" {
+  description = "Extra hostnames (e.g. www.example.com) served by the same distribution: added to the certificate as subject alternative names and, when Route 53 manages the zone, given alias records. Must be in the same zone as full_domain. A caller-supplied certificate_arn must already cover them."
+  type        = list(string)
+  default     = []
+}
+
 variable "certificate_arn" {
   description = "ARN of an existing ACM certificate covering the full domain. When set, the module attaches this certificate instead of requesting and validating its own. Must be in us-east-1 for CloudFront."
   type        = string
