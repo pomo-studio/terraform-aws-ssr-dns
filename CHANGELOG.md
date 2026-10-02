@@ -2,6 +2,14 @@
 
 All notable changes to this module are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/) and versions follow [Semantic Versioning](https://semver.org/).
 
+## [v0.4.0] - 2026-10-02
+
+### Added
+
+- `additional_domain_names` (default `[]`): extra hostnames, e.g. `www.example.com`, added to the certificate as subject alternative names and, when Route 53 manages the zone, given alias records. Validation records already cover every name on the certificate.
+- `dns_additional_records` output: the records to add by hand for each additional name when Route 53 does not manage the zone.
+- With the default, plans are unchanged: `subject_alternative_names` stays unset and no records are created.
+
 ## [v0.3.2] - 2026-09-12
 
 ### Added

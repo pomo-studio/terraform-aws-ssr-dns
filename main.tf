@@ -35,10 +35,30 @@ resource "aws_route53_record" "main" {
   }
 }
 
+# Extra hostnames (e.g. www) served by the same distribution. Each gets its own
+# alias record; the CloudFront module redirects them to full_domain.
+resource "aws_route53_record" "additional" {
+  for_each = var.enable_route53 ? toset(var.additional_domain_names) : toset([])
+
+  zone_id = data.aws_route53_zone.main[0].zone_id
+  name    = each.value
+  type    = "A"
+
+  alias {
+    name                   = var.cloudfront_domain_name
+    zone_id                = var.cloudfront_hosted_zone_id
+    evaluate_target_health = false
+  }
+}
+
 resource "aws_acm_certificate" "main" {
   count             = local.create_certificate ? 1 : 0
   domain_name       = var.full_domain
   validation_method = "DNS"
+
+  # null rather than [] when unused, so certificates created before this input
+  # existed plan without changes.
+  subject_alternative_names = length(var.additional_domain_names) > 0 ? var.additional_domain_names : null
 
   tags = merge(var.common_tags, {
     Name = "${var.app_name}-${var.full_domain}"

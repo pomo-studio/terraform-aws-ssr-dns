@@ -86,6 +86,7 @@ No modules.
 |------|------|
 | [aws_acm_certificate.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate) | resource |
 | [aws_acm_certificate_validation.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/acm_certificate_validation) | resource |
+| [aws_route53_record.additional](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.cert_validation](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_record.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/route53_record) | resource |
 | [aws_route53_zone.main](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/route53_zone) | data source |
@@ -94,6 +95,7 @@ No modules.
 
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
+| <a name="input_additional_domain_names"></a> [additional\_domain\_names](#input\_additional\_domain\_names) | Extra hostnames (e.g. www.example.com) served by the same distribution: added to the certificate as subject alternative names and, when Route 53 manages the zone, given alias records. Must be in the same zone as full\_domain. A caller-supplied certificate\_arn must already cover them. | `list(string)` | `[]` | no |
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | Application name for resource naming | `string` | n/a | yes |
 | <a name="input_certificate_arn"></a> [certificate\_arn](#input\_certificate\_arn) | ARN of an existing ACM certificate covering the full domain. When set, the module attaches this certificate instead of requesting and validating its own. Must be in us-east-1 for CloudFront. | `string` | `null` | no |
 | <a name="input_cloudfront_domain_name"></a> [cloudfront\_domain\_name](#input\_cloudfront\_domain\_name) | CloudFront domain name for alias record | `string` | n/a | yes |
@@ -109,6 +111,7 @@ No modules.
 | Name | Description |
 |------|-------------|
 | <a name="output_certificate_arn"></a> [certificate\_arn](#output\_certificate\_arn) | ACM certificate ARN |
+| <a name="output_dns_additional_records"></a> [dns\_additional\_records](#output\_dns\_additional\_records) | DNS record values for each additional domain name, for manual configuration when Route 53 does not manage the zone |
 | <a name="output_dns_cloudfront_record"></a> [dns\_cloudfront\_record](#output\_dns\_cloudfront\_record) | DNS record values for manual CloudFront configuration |
 | <a name="output_dns_validation_records"></a> [dns\_validation\_records](#output\_dns\_validation\_records) | DNS records for ACM certificate validation |
 <!-- END_TF_DOCS -->

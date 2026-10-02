@@ -23,3 +23,14 @@ output "dns_cloudfront_record" {
     note  = "Use A record (alias) if supported, otherwise CNAME"
   } : null
 }
+
+output "dns_additional_records" {
+  description = "DNS record values for each additional domain name, for manual configuration when Route 53 does not manage the zone"
+  value = var.enable_custom_domain && !var.enable_route53 ? [
+    for name in var.additional_domain_names : {
+      name  = name
+      type  = "A (Alias) or CNAME"
+      value = var.cloudfront_domain_name
+    }
+  ] : []
+}
