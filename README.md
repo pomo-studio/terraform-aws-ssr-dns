@@ -74,7 +74,7 @@ With `certificate_arn` set, it creates only the alias record.
 
 | Name | Version |
 |------|---------|
-| <a name="provider_aws"></a> [aws](#provider\_aws) | 6.72.0 |
+| <a name="provider_aws"></a> [aws](#provider\_aws) | >= 5.0, < 7.0 |
 
 ## Modules
 

@@ -13,14 +13,6 @@ on:
       - 'CHANGELOG.md'
   pull_request:
     branches: [main]
-    paths:
-      - '**.tf'
-      - '**.tfvars'
-      - '.tflint.hcl'
-      - '.github/workflows/terraform.yml'
-      - '.terraform-docs.yml'
-      - 'README.md'
-      - 'CHANGELOG.md'
   workflow_dispatch:
 
 concurrency:
@@ -102,3 +94,15 @@ jobs:
           # on every run since it was added. fail-on-diff is the supported way
           # to make an out-of-date README fail the build.
           fail-on-diff: true
+
+  checks-passed:
+    name: Checks passed
+    # One stable required status check for branch protection. Dependabot
+    # auto-merge waits on it, so it covers every job above without listing each.
+    if: always()
+    needs: [fmt, validate, tflint, docs]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Fail if any job failed or was cancelled
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
+        run: exit 1
